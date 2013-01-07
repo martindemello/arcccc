@@ -1,0 +1,7 @@
+*.la
+*.lo
+*.swp
+*~
+src/*.o
+src/arccc
+build
