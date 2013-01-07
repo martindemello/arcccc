@@ -1,7 +1,8 @@
 /* test.c - */
 
-#include <stdio.h>
 #include <glib.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "common.h"
 #include "wordvar.h"

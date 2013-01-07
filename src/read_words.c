@@ -1,7 +1,7 @@
 /* read_words.c - */
 
-#include <stdio.h>
 #include <glib.h>
+#include <stdio.h>
 
 #include "common.h"
 

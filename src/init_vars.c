@@ -1,7 +1,9 @@
 /* init_vars.c - */
 
-#include <stdio.h>
 #include <glib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "common.h"
 #include "wordvar.h"

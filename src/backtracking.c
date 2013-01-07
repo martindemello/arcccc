@@ -1,7 +1,7 @@
 /* backtracking.c - */
 
-#include <stdio.h>
 #include <glib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "common.h"
