@@ -1,6 +1,7 @@
-// constraint.h - 
+#pragma once
 
-struct constraint;
+#include <queue>
+
 struct wordvar;
 struct lettervar;
 
@@ -9,38 +10,39 @@ typedef enum {
   VALUE_INSTANTIATION,
 } trigger_type;
 
-typedef gboolean (*constraint_function)(struct constraint *c);
-
-// the general form of a constraint
-struct constraint {
-  constraint_function func;
-  gboolean on_queue;
-  gint data;
+class Constraint {
+  public:
+    virtual bool Trigger(ConstraintQueue& queue) = 0;
+    bool on_queue;
+    int data;
 };
 
-
-
 // word to letter constraint
-struct overlap_constraint {
-  constraint_function func;
-  gboolean on_queue;
-  struct wordvar *w;
-  struct lettervar *l;
-  int offset; // offset of letter into word
+class OverlapConstraint : public Constraint {
+  public:
+    OverlapConstraint(struct wordvar *w, struct lettervar *l, int offset);
+    struct wordvar* w;
+    struct lettervar* l;
+    int offset; // offset of letter into word
+    bool Trigger(ConstraintQueue& queue);
 };
 
 // uniqueness constraint
-struct uniqueness_constraint {
-  constraint_function func;
-  gboolean on_queue;
-  struct wordvar *w;
-  GSList *other_words;
+class UniquenessConstraint : public Constraint {
+  public:
+    UniquenessConstraint(struct wordvar *w, GSList *other_words);
+    struct wordvar *w;
+    GSList *other_words;
+    bool Trigger(ConstraintQueue& queue);
 };
 
+class ConstraintQueue {
+  public:
+    bool Run();
+    void AddConstraint(Constraint* c);
+    bool WordlistRemoveIndex(struct wordvar *w, int index);
 
-struct overlap_constraint *new_overlap_constraint(struct wordvar *w, 
-                                                  struct lettervar *l,
-                                                  gint offset);
-
-struct uniqueness_constraint *new_uniqueness_constraint(struct wordvar *w,
-                                                        GSList *other_words);
+  private:
+    void Drain();
+    std::queue<Constraint*> queue_;
+};

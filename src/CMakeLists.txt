@@ -10,7 +10,7 @@ link_directories (
   ${ARCCC_BINARY_DIR}/src/lib
 )
 
-add_executable ( arccc arccc.c )
+add_executable ( arccc arccc.cpp )
 target_link_libraries (arccc libarccc ${GLIB_LIBRARIES} )
 
 add_subdirectory ( lib )

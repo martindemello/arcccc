@@ -1,6 +1,8 @@
-// wordvar.h - 
+#pragma once
 
 struct lettervar;
+class OverlapConstraint;
+class UniquenessConstraint;
 
 struct wordvar {
   GPtrArray *possible_values;
@@ -8,7 +10,7 @@ struct wordvar {
   struct lettervar **letters;
   gint **letter_counts; // dimensions are [length][256] (pointers into lettervars)
   GPtrArray *stack; // for backtracking
-  struct overlap_constraint **orthogonal_constraints;
-  struct uniqueness_constraint *unique_constraint;
+  OverlapConstraint **orthogonal_constraints;
+  UniquenessConstraint *unique_constraint;
   GString *name;
 };

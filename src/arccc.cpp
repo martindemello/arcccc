@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
   GPtrArray *dictionary;
   gchar *grid;
   struct wordvar *w;
+  ConstraintQueue queue;
 
   if (argc != 3) {
     printf("usage: %s grid dictionary\n", argv[0]);
@@ -35,22 +36,22 @@ int main(int argc, char *argv[])
   printf("Initial %d\n", w->possible_values->len);
 
   for (ll = constraints; ll != NULL; ll = ll->next) {
-    struct constraint *c = ll->data;
-    put_constraint_on_queue(c);
+    Constraint *c = ll->data;
+    queue.AddConstraint(c);
   }
 
-  run_constraints();
+  queue.Run();
 
   printf("First %d\n", w->possible_values->len);
 
   for (ll = constraints; ll != NULL; ll = ll->next) {
-    struct constraint *c = ll->data;
-    put_constraint_on_queue(c);
+    Constraint *c = ll->data;
+    queue.AddConstraint(c);
   }
 
 
   total = 0;
-  find_solution(words, letters, grid, 0);
+  find_solution(words, letters, grid, 0, queue);
   printf("total %d\n", total);
 
 
