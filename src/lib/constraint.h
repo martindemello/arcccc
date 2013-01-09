@@ -4,6 +4,7 @@
 
 struct wordvar;
 struct lettervar;
+class ConstraintQueue;
 
 typedef enum {
   VALUE_CHANGE,

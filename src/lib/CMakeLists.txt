@@ -9,6 +9,6 @@ link_directories (
 )
 
 add_library (
-  libarccc backtracking.cpp constraint.cpp init_vars.cpp read_grid.cpp read_words.cpp
+  libarccc arccc.cpp constraint.cpp read_grid.cpp read_words.cpp
 )
 target_link_libraries ( libarccc ${GLIB_LIBRARIES} )
