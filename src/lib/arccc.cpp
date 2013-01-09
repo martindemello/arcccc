@@ -150,7 +150,7 @@ void Arccc::FindSolution(GSList *words, GSList *letters, gchar *grid, gint depth
   count++;
     
   if (depth >= maxdepth) {
-    printf("depth %d (%d, %d)\n%s\n\n", maxdepth = depth, count, total, grid);
+    maxdepth = depth;
   }
 
   push_state(words, letters);
