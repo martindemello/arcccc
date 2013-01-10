@@ -27,8 +27,6 @@ void set_letter(struct lettervar *l)
 
 typedef unsigned int uint;
 
-//static GSList *queue = NULL;
-
 void ConstraintQueue::Drain() {
   while (!queue_.empty()) {
     Constraint* c = queue_.front();

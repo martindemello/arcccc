@@ -42,7 +42,8 @@ void pop_state(GSList *words, GSList *letters)
 }  // namespace
 
 
-Arccc::Arccc(char* dictionary_file) {
+Arccc::Arccc(char* dictionary_file) :
+  count(0), total(0), maxdepth_(0) {
   printf("dictionary %s\n", dictionary_file);
   dictionary_ = read_words(dictionary_file);
 }
@@ -144,13 +145,10 @@ void Arccc::FindSolution(GSList *words, GSList *letters, gchar *grid, gint depth
 {
   GSList *ll;
   gchar gridsnap[MAX_GRID*MAX_GRID];
-  static gint count = 0;
-  static gint maxdepth = 0;
-
   count++;
     
-  if (depth >= maxdepth) {
-    maxdepth = depth;
+  if (depth >= maxdepth_) {
+    maxdepth_ = depth;
   }
 
   push_state(words, letters);

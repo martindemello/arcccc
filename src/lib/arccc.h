@@ -24,5 +24,7 @@ class Arccc {
     GSList* constraints_;
     GPtrArray* dictionary_;
     ConstraintQueue queue_;
+    int maxdepth_;
     int total;
+    int count;
 };
