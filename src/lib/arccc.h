@@ -16,7 +16,7 @@ class Arccc {
     char* grid_;
 
   private:
-    void FindSolution(GSList *words, GSList *letters, gchar *grid, gint depth, ConstraintQueue& queue);
+    void FindSolution(int depth);
     void Init();
     
     GSList* words_;

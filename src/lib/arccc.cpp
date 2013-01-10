@@ -64,7 +64,7 @@ void Arccc::Init() {
     w->possible_values = g_ptr_array_new();
 
     for (i = 0; i < dictionary_->len; i++) {
-      gchar *dword = g_ptr_array_index(dictionary_, i);
+      char *dword = g_ptr_array_index(dictionary_, i);
       gint j;
 
       // check that the lengths match
@@ -72,7 +72,7 @@ void Arccc::Init() {
 
       // check that the word matches the constraints
       for (j = 0; j < w->length; j++) {
-        if (w->letters[j]->letters_allowed[(guint) dword[j]] != TRUE) break;
+        if (w->letters[j]->letters_allowed[(guint) dword[j]] != true) break;
       }
       if (j < w->length) continue;
       
@@ -97,11 +97,11 @@ void Arccc::Init() {
     // update allowed letters
     for (i = 0; i < 256; i++) {
       if ((l->letter_counts[0][i] > 0) && (l->letter_counts[1][i] > 0)) {
-        l->letters_allowed[i] = TRUE;
+        l->letters_allowed[i] = true;
         l->num_letters_allowed++;
         val = i;
       } else {
-        l->letters_allowed[i] = FALSE;
+        l->letters_allowed[i] = false;
       }
     }
 
@@ -135,33 +135,31 @@ Arccc::Run() {
     queue_.AddConstraint(c);
   }
 
-
-  total = 0;
-  FindSolution(words_, letters_, grid_, 0, queue_);
+  FindSolution(0);
   printf("total %d\n", total);
 }
 
-void Arccc::FindSolution(GSList *words, GSList *letters, gchar *grid, gint depth, ConstraintQueue& queue)
+void Arccc::FindSolution(int depth)
 {
   GSList *ll;
-  gchar gridsnap[MAX_GRID*MAX_GRID];
+  char gridsnap[MAX_GRID*MAX_GRID];
   count++;
     
   if (depth >= maxdepth_) {
     maxdepth_ = depth;
   }
 
-  push_state(words, letters);
-  strcpy(gridsnap, grid);
+  push_state(words_, letters_);
+  strcpy(gridsnap, grid_);
   
-  if (queue.Run()) {
+  if (queue_.Run()) {
     gint min = 257;
     struct lettervar *next_to_try = NULL;
     gboolean letters_to_try[256];
     gint i;
     
     // find the most constrained (but still not set) letter
-    for (ll = letters; ll != NULL; ll = ll->next) {
+    for (ll = letters_; ll != NULL; ll = ll->next) {
       struct lettervar *l = ll->data;
       
       if (l->num_letters_allowed == 1) continue;
@@ -175,9 +173,9 @@ void Arccc::FindSolution(GSList *words, GSList *letters, gchar *grid, gint depth
 
     if (next_to_try == NULL) {
       total++;
-      printf("depth %d (%d, %d)\n%s\n\n", depth, count, total, grid);
-      pop_state(words, letters);
-      strcpy(grid, gridsnap);
+      printf("depth %d (%d, %d)\n%s\n\n", depth, count, total, grid_);
+      pop_state(words_, letters_);
+      strcpy(grid_, gridsnap);
       return;
     }
 
@@ -187,7 +185,7 @@ void Arccc::FindSolution(GSList *words, GSList *letters, gchar *grid, gint depth
     
     for (i = 0; i < 256; i++) {
       if (letters_to_try[i]) {
-        next_to_try->letters_allowed[i] = TRUE;
+        next_to_try->letters_allowed[i] = true;
         next_to_try->num_letters_allowed = 1;
         
         if (depth == 0) {
@@ -196,15 +194,15 @@ void Arccc::FindSolution(GSList *words, GSList *letters, gchar *grid, gint depth
           *(next_to_try->pos) = i;
         }
         
-        queue.AddConstraint((Constraint*) next_to_try->constraints[0]);
-        queue.AddConstraint((Constraint*) next_to_try->constraints[1]);
-        FindSolution(words, letters, grid, depth + 1, queue);
+        queue_.AddConstraint((Constraint*) next_to_try->constraints[0]);
+        queue_.AddConstraint((Constraint*) next_to_try->constraints[1]);
+        FindSolution(depth + 1);
 
-        next_to_try->letters_allowed[i] = FALSE;
+        next_to_try->letters_allowed[i] = false;
       }
     }
   }
 
-  pop_state(words, letters);
-  strcpy(grid, gridsnap);
+  pop_state(words_, letters_);
+  strcpy(grid_, gridsnap);
 }
