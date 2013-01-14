@@ -91,13 +91,13 @@ UniquenessConstraint::UniquenessConstraint(struct wordvar* _w, GSList* _other_wo
 
 bool UniquenessConstraint::Trigger(ConstraintQueue& queue) {
   GSList *temp;
-  char *unique_word = g_ptr_array_index(w->possible_values, 0);
+  char *unique_word = (char*) g_ptr_array_index(w->possible_values, 0);
 
   // check that constraint should be triggered
   if (w->possible_values->len > 1) return (true);
 
   for (temp = other_words; temp != NULL; temp = temp->next) {
-    struct wordvar *ow = temp->data;
+    struct wordvar *ow = (wordvar*) temp->data;
     GPtrArray *wordlist = ow->possible_values;
     int i;
 
@@ -132,7 +132,7 @@ bool ConstraintQueue::WordlistRemoveIndex(struct wordvar *w, int index)
 #endif
 
   // swap pointer to end of list, trim length of list by one.
-  temp = g_ptr_array_index(wordlist, index);
+  temp = (char*) g_ptr_array_index(wordlist, index);
   g_ptr_array_index(wordlist, index) = g_ptr_array_index(wordlist, wordlist->len-1);
   g_ptr_array_index(wordlist, wordlist->len-1) = temp;
   wordlist->len--;
