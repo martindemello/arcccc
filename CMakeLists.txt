@@ -5,5 +5,5 @@ find_package ( PkgConfig REQUIRED )
 
 pkg_check_modules ( GLIB REQUIRED glib-2.0 ) 
 
-set ( CMAKE_CXX_FLAGS "-g -w -fpermissive" )
+set ( CMAKE_CXX_FLAGS "-g -Wall -Wno-sign-compare -std=c++0x" )
 add_subdirectory ( src )
