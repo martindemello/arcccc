@@ -6,25 +6,26 @@
 #include "wordvar.h"
 #include "lettervar.h"
 #include "constraint.h"
+#include <iostream>
 
 class Arccc {
   public:
-    Arccc(char* dictionary_file); 
-    ReadGrid(char* grid_file); 
-    Run();
+    Arccc(char* dictionary_file);
+    void ReadGrid(char* grid_file);
+    void Run();
 
     char* grid_;
 
   private:
-    void FindSolution(int depth);
+    void FindSolution();
     void Init();
-    
+
     GSList* words_;
     GSList* letters_;
     GSList* constraints_;
     GPtrArray* dictionary_;
     ConstraintQueue queue_;
     int maxdepth_;
-    int total;
-    int count;
+    int total_;
+    int count_;
 };

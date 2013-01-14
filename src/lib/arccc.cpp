@@ -1,23 +1,24 @@
 #include "arccc.h"
 
-#include <string>
 #include <cstring>
+#include <iostream>
+#include <memory>
 #include <stdlib.h>
+#include <string>
 
 namespace {
 
 void push_state(GSList *words, GSList *letters)
 {
   GSList *p;
-  GSList *newwords = NULL, *newletters = NULL;
-  
+
   for (p = words; p != NULL; p = p->next) {
-    struct wordvar *w = p->data;
+    struct wordvar *w = (wordvar*) p->data;
     g_ptr_array_add(w->stack, (void *) w->possible_values->len);
   }
-  
+
   for (p = letters; p != NULL; p = p->next) {
-    struct lettervar *l = p->data;
+    struct lettervar *l = (lettervar*) p->data;
     g_array_append_vals(l->stack, l, 1);
   }
 }
@@ -27,28 +28,46 @@ void pop_state(GSList *words, GSList *letters)
   GSList *p;
 
   for (p = words; p != NULL; p = p->next) {
-    struct wordvar *w = p->data;
+    struct wordvar *w = (wordvar*) p->data;
     w->possible_values->len = (guint) g_ptr_array_index(w->stack, w->stack->len-1);
     g_ptr_array_set_size(w->stack, w->stack->len-1);
   }
 
   for (p = letters; p != NULL; p = p->next) {
-    struct lettervar *l = p->data;
+    struct lettervar *l = (lettervar*) p->data;
     *l = g_array_index(l->stack, struct lettervar, l->stack->len-1);
     g_array_set_size(l->stack, l->stack->len-1);
   }
 }
 
+struct Frame {
+  int min;
+  int depth;
+  int i;
+  int return_pt;
+  struct lettervar* next_to_try;
+  char gridsnap[MAX_GRID*MAX_GRID];
+  gboolean letters_to_try[256];
+
+  Frame() {
+    min = 0;
+    return_pt = 0;
+    depth = 0;
+    i = 0;
+    next_to_try = NULL;
+  }
+};
+
 }  // namespace
 
 
 Arccc::Arccc(char* dictionary_file) :
-  count(0), total(0), maxdepth_(0) {
+  maxdepth_(0), total_(0), count_(0) {
   printf("dictionary %s\n", dictionary_file);
   dictionary_ = read_words(dictionary_file);
 }
 
-Arccc::ReadGrid(char* grid_file) {
+void Arccc::ReadGrid(char* grid_file) {
   grid_ = read_grid(grid_file, &words_, &letters_, &constraints_);
   Init();
   printf("%s\n", grid_);
@@ -58,13 +77,13 @@ void Arccc::Init() {
   GSList *p;
 
   for (p = words_; p != NULL; p = p->next) {
-    struct wordvar *w = p->data;
-    gint i;
+    struct wordvar *w = (wordvar*) p->data;
+    unsigned int i;
 
     w->possible_values = g_ptr_array_new();
 
     for (i = 0; i < dictionary_->len; i++) {
-      char *dword = g_ptr_array_index(dictionary_, i);
+      char *dword = (char*) g_ptr_array_index(dictionary_, i);
       gint j;
 
       // check that the lengths match
@@ -75,7 +94,7 @@ void Arccc::Init() {
         if (w->letters[j]->letters_allowed[(guint) dword[j]] != true) break;
       }
       if (j < w->length) continue;
-      
+
       // add this word to the possible values
       g_ptr_array_add(w->possible_values, dword);
       for (j = 0; j < w->length; j++) {
@@ -90,9 +109,9 @@ void Arccc::Init() {
   }
 
   for (p = letters_; p != NULL; p = p->next) {
-    struct lettervar *l = p->data;
+    struct lettervar *l = (lettervar*) p->data;
     gint i, val = 0;
-    
+
     l->num_letters_allowed = 0;
     // update allowed letters
     for (i = 0; i < 256; i++) {
@@ -108,101 +127,128 @@ void Arccc::Init() {
     if (l->num_letters_allowed == 0) {
       printf("Die: No letters for %s.\n", l->name->str);
       exit(-1);
-    } 
+    }
     if (l->num_letters_allowed == 1) {
       *(l->pos) = val;
     }
   }
 }
 
-Arccc::Run() {
+void Arccc::Run() {
   GSList* ll;
 
-  struct wordvar* w = words_->data;
-  printf("Initial %d\n", w->possible_values->len);
+  struct wordvar* w = (wordvar*) words_->data;
 
   for (ll = constraints_; ll != NULL; ll = ll->next) {
-    Constraint *c = ll->data;
+    Constraint *c = (Constraint*) ll->data;
     queue_.AddConstraint(c);
   }
 
   queue_.Run();
 
-  printf("First %d\n", w->possible_values->len);
-
   for (ll = constraints_; ll != NULL; ll = ll->next) {
-    Constraint *c = ll->data;
+    Constraint *c = (Constraint*) ll->data;
     queue_.AddConstraint(c);
   }
 
-  FindSolution(0);
-  printf("total %d\n", total);
+  FindSolution();
 }
 
-void Arccc::FindSolution(int depth)
+typedef std::shared_ptr<Frame> FramePtr;
+
+void Arccc::FindSolution()
 {
-  GSList *ll;
-  char gridsnap[MAX_GRID*MAX_GRID];
-  count++;
-    
-  if (depth >= maxdepth_) {
-    maxdepth_ = depth;
-  }
+  FramePtr f, frame;
+  Frame* nf;
+  std::vector<FramePtr> stack;
+  f.reset(new Frame);
+  stack.push_back(f);
 
-  push_state(words_, letters_);
-  strcpy(gridsnap, grid_);
-  
-  if (queue_.Run()) {
-    gint min = 257;
-    struct lettervar *next_to_try = NULL;
-    gboolean letters_to_try[256];
-    gint i;
-    
-    // find the most constrained (but still not set) letter
-    for (ll = letters_; ll != NULL; ll = ll->next) {
-      struct lettervar *l = ll->data;
-      
-      if (l->num_letters_allowed == 1) continue;
+  while(true) {
+top:
+    frame = stack.back();
+    count_++;
 
-      if (l->num_letters_allowed < min) {
-        min = l->num_letters_allowed;
-        next_to_try = l;
+    if (frame->depth >= maxdepth_) {
+      maxdepth_ = frame->depth;
+    }
+
+    push_state(words_, letters_);
+    strcpy(frame->gridsnap, grid_);
+
+    if (queue_.Run()) {
+      frame->min = 257;
+      frame->next_to_try = NULL;
+
+      // find the most constrained (but still not set) letter
+      for (GSList* ll = letters_; ll != NULL; ll = ll->next) {
+        struct lettervar *l = (lettervar*) ll->data;
+
+        if (l->num_letters_allowed == 1) continue;
+
+        if (l->num_letters_allowed < frame->min) {
+          frame->min = l->num_letters_allowed;
+          frame->next_to_try = l;
+        }
+      }
+
+      if (frame->next_to_try == NULL) {
+        total_++;
+        printf("depth %d (%d, %d)\n%s\n\n", frame->depth, count_, total_, grid_);
+        pop_state(words_, letters_);
+        strcpy(grid_, frame->gridsnap);
+        return;
+      }
+
+      memcpy(frame->letters_to_try, frame->next_to_try->letters_allowed, sizeof (frame->letters_to_try));
+      memset(frame->next_to_try->letters_allowed, 0, sizeof (frame->letters_to_try));
+
+      for (frame->i = 0; frame->i < 256; frame->i++) {
+        if (frame->letters_to_try[frame->i]) {
+          frame->next_to_try->letters_allowed[frame->i] = true;
+          frame->next_to_try->num_letters_allowed = 1;
+
+          if (frame->depth == 0) {
+            *(frame->next_to_try->pos) = frame->i - 'a' + 'A';
+          } else {
+            *(frame->next_to_try->pos) = frame->i;
+          }
+
+          queue_.AddConstraint((Constraint*) frame->next_to_try->constraints[0]);
+          queue_.AddConstraint((Constraint*) frame->next_to_try->constraints[1]);
+
+          // In place of the recursive call
+          //   FindSolution(frame->depth + 1);
+          // we allocate a new frame, push it onto the stack, and jump back to the start.
+          // Setting return_pt = 1 causes the function to jump back to recur: instead of returning.
+          nf = new Frame();
+          nf->depth = frame->depth + 1;
+          nf->return_pt = 1;
+          f.reset(nf);
+          stack.push_back(f);
+          goto top;
+recur:
+          frame->next_to_try->letters_allowed[frame->i] = false;
+        }
       }
     }
 
+    pop_state(words_, letters_);
+    strcpy(grid_, frame->gridsnap);
 
-    if (next_to_try == NULL) {
-      total++;
-      printf("depth %d (%d, %d)\n%s\n\n", depth, count, total, grid_);
-      pop_state(words_, letters_);
-      strcpy(grid_, gridsnap);
+    // This is where the recursive function would return; instead we pop the
+    // current frame off the stack, reset the frame pointer to the new stack
+    // top, and jump back to just after the old recursive call.
+    //
+    // We needn't check for stack.empty() before calling pop_back(), since the
+    // first frame pushed onto the stack has return_pt = 0, and will therefore
+    // exit the function.
+    if (frame->return_pt == 1) {
+      stack.pop_back();
+      frame = stack.back();
+      goto recur;
+    } else {
       return;
     }
-
-    memcpy(letters_to_try, next_to_try->letters_allowed, sizeof (letters_to_try));
-    memset(next_to_try->letters_allowed, 0, sizeof (letters_to_try));
-
-    
-    for (i = 0; i < 256; i++) {
-      if (letters_to_try[i]) {
-        next_to_try->letters_allowed[i] = true;
-        next_to_try->num_letters_allowed = 1;
-        
-        if (depth == 0) {
-          *(next_to_try->pos) = i - 'a' + 'A';
-        } else {
-          *(next_to_try->pos) = i;
-        }
-        
-        queue_.AddConstraint((Constraint*) next_to_try->constraints[0]);
-        queue_.AddConstraint((Constraint*) next_to_try->constraints[1]);
-        FindSolution(depth + 1);
-
-        next_to_try->letters_allowed[i] = false;
-      }
-    }
   }
-
-  pop_state(words_, letters_);
-  strcpy(grid_, gridsnap);
 }
