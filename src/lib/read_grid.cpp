@@ -1,5 +1,8 @@
 /* read_grid.c - */
 
+#include <string>
+#include <sstream>
+
 #include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,9 +14,8 @@
 #include "lettervar.h"
 
 gchar *
-read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **constraintlist)
+read_grid(const char *gridstring, GSList **wordlist, GSList **letterlist, GSList **constraintlist)
 {
-  FILE *fp;
   gchar grid[MAX_GRID][MAX_GRID];
   gchar *gridstr, *p;
   gpointer awgrid[MAX_GRID][MAX_GRID], dwgrid[MAX_GRID][MAX_GRID];
@@ -22,15 +24,14 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
   GSList *l;
   OverlapConstraint *oca, *ocd;
 
-  fp = fopen(filename, "r");
-  g_assert(fp != NULL);
-
   *wordlist = *letterlist = *constraintlist = NULL;
 
   p = gridstr = (gchar*) g_malloc((MAX_GRID+1) * (MAX_GRID+1));
 
   row = 0;
-  while(fgets(grid[row++], MAX_GRID, fp) != NULL);
+  std::istringstream f(gridstring);
+  while (f.getline(grid[row++], MAX_GRID));
+
   memset(grid[row], 0, MAX_GRID);
   maxrow = row;
 
@@ -184,6 +185,5 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
     *constraintlist = g_slist_prepend(*constraintlist, uc);
   }
 
-  fclose(fp);
   return (gridstr);
 }

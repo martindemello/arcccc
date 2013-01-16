@@ -1,8 +1,10 @@
 #include "arccc.h"
 
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <stdlib.h>
 #include <string>
 
@@ -40,6 +42,14 @@ void pop_state(GSList *words, GSList *letters)
   }
 }
 
+std::string slurp(const char* filename) {
+  std::ostringstream os;
+  std::ifstream file(filename);
+  os << file.rdbuf();
+  file.close();
+  return os.str();
+}
+
 struct Frame {
   int min;
   int depth;
@@ -67,8 +77,13 @@ Arccc::Arccc(char* dictionary_file) :
   dictionary_ = read_words(dictionary_file);
 }
 
-void Arccc::ReadGrid(char* grid_file) {
-  grid_ = read_grid(grid_file, &words_, &letters_, &constraints_);
+void Arccc::ReadGridFile(const char* grid_file) {
+  std::string grid = slurp(grid_file);
+  ReadGrid(grid.c_str());
+}
+
+void Arccc::ReadGrid(const char* grid) {
+  grid_ = read_grid(grid, &words_, &letters_, &constraints_);
   Init();
   printf("%s\n", grid_);
 }
@@ -136,8 +151,6 @@ void Arccc::Init() {
 
 void Arccc::Run() {
   GSList* ll;
-
-  struct wordvar* w = (wordvar*) words_->data;
 
   for (ll = constraints_; ll != NULL; ll = ll->next) {
     Constraint *c = (Constraint*) ll->data;

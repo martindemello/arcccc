@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   }
 
   Arccc arccc(argv[2]);
-  arccc.ReadGrid(argv[1]);
+  arccc.ReadGridFile(argv[1]);
   arccc.Run();
 
   return (0);

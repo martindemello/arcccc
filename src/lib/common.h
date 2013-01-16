@@ -1,7 +1,6 @@
 // common.h - 
 
 GPtrArray *read_words(char *filename);
-gchar *read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **constraintlist);
+gchar *read_grid(const char *grid, GSList **wordlist, GSList **letterlist, GSList **constraintlist);
 
 #define MAX_GRID 128
-
