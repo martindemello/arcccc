@@ -71,9 +71,8 @@ struct Frame {
 }  // namespace
 
 
-Arccc::Arccc(char* dictionary_file) :
+Arccc::Arccc(const char* dictionary_file) :
   maxdepth_(0), total_(0), count_(0) {
-  printf("dictionary %s\n", dictionary_file);
   dictionary_ = read_words(dictionary_file);
 }
 
@@ -85,7 +84,6 @@ void Arccc::ReadGridFile(const char* grid_file) {
 void Arccc::ReadGrid(const char* grid) {
   grid_ = read_grid(grid, &words_, &letters_, &constraints_);
   Init();
-  printf("%s\n", grid_);
 }
 
 void Arccc::Init() {

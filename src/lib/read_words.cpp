@@ -6,7 +6,7 @@
 #include "common.h"
 
 GPtrArray *
-read_words(char *filename)
+read_words(const char *filename)
 {
   FILE *fp = fopen(filename, "r");
   gchar buf[128];

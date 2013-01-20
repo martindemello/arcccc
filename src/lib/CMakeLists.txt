@@ -9,6 +9,7 @@ link_directories (
 )
 
 add_library (
-  libarccc arccc.cpp constraint.cpp read_grid.cpp read_words.cpp
+  libarccc arccc.cpp constraint.cpp read_grid.cpp read_words.cpp arccc_wrapper.cpp
 )
+
 target_link_libraries ( libarccc ${GLIB_LIBRARIES} )
