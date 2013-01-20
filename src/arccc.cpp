@@ -4,10 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "common.h"
-#include "wordvar.h"
-#include "lettervar.h"
-#include "constraint.h"
 #include "arccc.h"
 
 int main(int argc, char *argv[])

@@ -10,7 +10,7 @@
 
 class Arccc {
   public:
-    Arccc(const char* dictionary_file);
+    explicit Arccc(const char* dictionary_file);
     void ReadGrid(const char* grid);
     void ReadGridFile(const char* grid_file);
     bool Run();

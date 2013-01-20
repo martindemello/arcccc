@@ -1,4 +1,5 @@
 #include "arccc.h"
+#include "arccc_wrapper.h"
 
 struct HArccc : public Arccc { };
 
