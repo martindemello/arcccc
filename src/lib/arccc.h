@@ -13,12 +13,12 @@ class Arccc {
     Arccc(const char* dictionary_file);
     void ReadGrid(const char* grid);
     void ReadGridFile(const char* grid_file);
-    void Run();
+    bool Run();
 
     char* grid_;
 
   private:
-    void FindSolution();
+    bool FindSolution();
     void Init();
 
     GSList* words_;

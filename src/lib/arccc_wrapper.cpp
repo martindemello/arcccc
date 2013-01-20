@@ -17,8 +17,8 @@ extern "C" {
     return true;
   }
 
-  void arccc_run(HArccc* arccc) {
-    arccc->Run();
+  bool arccc_run(HArccc* arccc) {
+    return arccc->Run();
   }
 
   char* arccc_get_grid(HArccc* arccc) {

@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
   Arccc arccc(argv[2]);
   arccc.ReadGridFile(argv[1]);
   arccc.Run();
+  printf("%s", arccc.grid_);
 
   return (0);
 }

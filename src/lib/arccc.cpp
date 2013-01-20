@@ -147,7 +147,7 @@ void Arccc::Init() {
   }
 }
 
-void Arccc::Run() {
+bool Arccc::Run() {
   GSList* ll;
 
   for (ll = constraints_; ll != NULL; ll = ll->next) {
@@ -162,12 +162,12 @@ void Arccc::Run() {
     queue_.AddConstraint(c);
   }
 
-  FindSolution();
+  return FindSolution();
 }
 
 typedef std::shared_ptr<Frame> FramePtr;
 
-void Arccc::FindSolution()
+bool Arccc::FindSolution()
 {
   FramePtr f, frame;
   Frame* nf;
@@ -205,10 +205,9 @@ top:
 
       if (frame->next_to_try == NULL) {
         total_++;
-        printf("depth %d (%d, %d)\n%s\n\n", frame->depth, count_, total_, grid_);
         pop_state(words_, letters_);
-        strcpy(grid_, frame->gridsnap);
-        return;
+        //strcpy(grid_, frame->gridsnap);
+        return true;
       }
 
       memcpy(frame->letters_to_try, frame->next_to_try->letters_allowed, sizeof (frame->letters_to_try));
@@ -259,7 +258,7 @@ recur:
       frame = stack.back();
       goto recur;
     } else {
-      return;
+      return false;
     }
   }
 }
