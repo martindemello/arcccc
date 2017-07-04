@@ -6,7 +6,7 @@ src/*.o
 src/arccc
 build
 CMakeFiles
-Makefile
+src/**/Makefile
 CMakeCache.txt
 cmake_install.cmake
 rust/target/*
