@@ -5,3 +5,9 @@
 src/*.o
 src/arccc
 build
+CMakeFiles
+Makefile
+CMakeCache.txt
+cmake_install.cmake
+rust/target/*
+rust/Cargo.lock
