@@ -8,6 +8,7 @@ extern crate glib;
 extern crate glib_sys;
 extern crate libc;
 
+#[no_mangle]
 pub fn read_words(filename: *const c_char) -> *mut glib_sys::GPtrArray {
     unsafe {
         let fname = CStr::from_ptr(filename).to_string_lossy().into_owned();
