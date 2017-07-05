@@ -10,52 +10,37 @@
 #include "wordvar.h"
 
 static gboolean wordlist_remove_index(struct wordvar *w, int index);
-static gboolean trigger_constraint(struct constraint *c);
 static void set_letter(struct lettervar *l);
 
-static GSList *queue = NULL;
+static void *queue = NULL;
 
 gboolean
 run_constraints(void)
 {
-  while (queue != NULL) {
-    struct constraint *c;
+  return run_constraint_queue(queue);
+}
 
-    c = queue->data;
-    queue = g_slist_remove(queue, c);
+void set_on_queue_false(struct constraint* c) {
+  c->on_queue = FALSE;
+}
 
-    g_assert(c->on_queue);
-
-    if (trigger_constraint(c) == FALSE) {
-        c->on_queue = FALSE;
-        while (queue) {
-          c = queue->data;
-          c->on_queue = FALSE;
-          queue = g_slist_remove(queue, c);
-        }
-        
-      return FALSE;
-    }
-
-    c->on_queue = FALSE;
-  }
-
-  return TRUE;
+void set_on_queue_true(struct constraint* c) {
+  c->on_queue = TRUE;
 }
 
 void
 put_constraint_on_queue(struct constraint *c)
 {
   g_assert(c != NULL);
-
+  if (queue == NULL) {
+    queue = (void *) queue_new();
+  }
   if (c->on_queue == FALSE) {
-    queue = g_slist_prepend(queue, c);
-    c->on_queue = TRUE;
+    queue = (void *) add_constraint_to_queue(queue, c);
   }
 }
 
-
-static gboolean
+gboolean
 trigger_constraint(struct constraint *c)
 {
   // trigger the constraint, and return its success value

@@ -44,3 +44,7 @@ struct overlap_constraint *new_overlap_constraint(struct wordvar *w,
 
 struct uniqueness_constraint *new_uniqueness_constraint(struct wordvar *w,
                                                         GSList *other_words);
+
+void set_on_queue_false(struct constraint* c);
+void set_on_queue_true(struct constraint* c);
+gboolean trigger_constraint(struct constraint *c);
