@@ -22,7 +22,7 @@ set_directory_properties(PROPERTIES EP_PREFIX ${ARCCC_BINARY_DIR}/src/rust)
 
 # Add rust lib as a CMake target
 ExternalProject_Add(
-  dict_reader
+  arcccc_rs
   DOWNLOAD_COMMAND ""
   CONFIGURE_COMMAND ""
   BUILD_COMMAND cargo build COMMAND cargo build --release
@@ -31,10 +31,10 @@ ExternalProject_Add(
   LOG_BUILD ON)
 
 # Create dependency of libarccc on rust lib
-add_dependencies(libarccc dict_reader)
+add_dependencies(libarccc arcccc_rs)
 
 # Specify rust libraries to link into libarccc
 target_link_libraries(libarccc
-  debug "${ARCCC_SOURCE_DIR}/src/rust/target/debug/libdict_reader.a"
-  optimized "${ARCCC_SOURCE_DIR}/src/rust/target/release/libdict_reader.a"
+  debug "${ARCCC_SOURCE_DIR}/src/rust/target/debug/libarcccc.a"
+  optimized "${ARCCC_SOURCE_DIR}/src/rust/target/release/libarcccc.a"
   gobject-2.0 glib-2.0 glib-2.0 util dl rt pthread gcc_s c m rt pthread util)

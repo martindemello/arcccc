@@ -4,7 +4,7 @@ version = "0.0.1"
 authors = ["Martin DeMello <martindemello@gmail.com>"]
 
 [lib]
-name = "dict_reader"
+name = "arcccc"
 crate-type = ["staticlib"]
 
 [dependencies]
