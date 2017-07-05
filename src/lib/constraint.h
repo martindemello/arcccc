@@ -1,4 +1,4 @@
-// constraint.h - 
+// constraint.h -
 
 struct constraint;
 struct wordvar;
@@ -38,7 +38,7 @@ struct uniqueness_constraint {
 };
 
 
-struct overlap_constraint *new_overlap_constraint(struct wordvar *w, 
+struct overlap_constraint *new_overlap_constraint(struct wordvar *w,
                                                   struct lettervar *l,
                                                   gint offset);
 
@@ -47,6 +47,39 @@ struct uniqueness_constraint *new_uniqueness_constraint(struct wordvar *w,
 
 void set_on_queue_false(struct constraint* c);
 void set_on_queue_true(struct constraint* c);
+gboolean get_on_queue(struct constraint* c);
 gboolean trigger_constraint(struct constraint *c);
 gboolean revise_word_letter(struct overlap_constraint *c);
 gboolean revise_word_unique(struct uniqueness_constraint *c);
+
+// Rust exports
+
+struct Constraint {
+  unsigned char tag;
+  void* constraint;
+};
+
+unsigned char get_tag(struct Constraint* c);
+
+struct UniquenessConstraint {
+  unsigned char tag;
+  struct uniqueness_constraint* constraint;
+};
+
+typedef struct UniquenessConstraint UniquenessConstraint;
+
+struct OverlapConstraint {
+  unsigned char tag;
+  struct overlap_constraint* constraint;
+};
+
+typedef struct OverlapConstraint OverlapConstraint;
+
+struct OverlapConstraint *make_overlap_constraint(struct wordvar *w,
+                                                  struct lettervar *l,
+                                                  gint offset);
+
+struct UniquenessConstraint *make_uniqueness_constraint(struct wordvar *w,
+                                                        GSList *other_words);
+
+

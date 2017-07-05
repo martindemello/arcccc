@@ -20,7 +20,8 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
   int row, col, maxrow;
   int wcount = 0;
   GSList *l;
-  struct overlap_constraint *oca, *ocd;
+  struct OverlapConstraint *oca;
+  struct OverlapConstraint *ocd;
 
   fp = fopen(filename, "r");
   g_assert(fp != NULL);
@@ -86,7 +87,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
           aw->letters = g_realloc(aw->letters, (aw->length+1) * sizeof (struct lettervar *));
           aw->letter_counts = g_realloc(aw->letter_counts, (aw->length+1) * sizeof (gint *));
           aw->orthogonal_constraints = g_realloc(aw->orthogonal_constraints, 
-                                                 (aw->length+1) * sizeof (struct overlap_constraint *));
+                                                 (aw->length+1) * sizeof (struct OverlapConstraint *));
         }
       } else {
         aw = g_malloc0(sizeof (struct wordvar));
@@ -98,7 +99,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
         // allocate space for 4 letters by default
         aw->letters = g_malloc(4 * sizeof (struct lettervar *));
         aw->letter_counts = g_malloc(4 * sizeof (gint *));
-        aw->orthogonal_constraints = g_malloc(4 * sizeof (struct overlap_constraint *));
+        aw->orthogonal_constraints = g_malloc(4 * sizeof (struct OverlapConstraint *));
       }
       awgrid[row][col] = aw;
       
@@ -111,7 +112,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
           dw->letters = g_realloc(dw->letters, (dw->length+1) * sizeof (struct lettervar *));
           dw->letter_counts = g_realloc(dw->letter_counts, (dw->length+1) * sizeof(gint *));
           dw->orthogonal_constraints = g_realloc(dw->orthogonal_constraints, 
-                                                 (dw->length+1) * sizeof (struct overlap_constraint *));
+                                                 (dw->length+1) * sizeof (struct OverlapConstraint *));
         }
       } else {
         dw = g_malloc0(sizeof (struct wordvar));
@@ -123,7 +124,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
         // allocate space for 4 letters by default
         dw->letters = g_malloc(4 * sizeof (struct lettervar *));
         dw->letter_counts = g_malloc(4 * sizeof(gint *));
-        dw->orthogonal_constraints = g_malloc(4 * sizeof (struct overlap_constraint *));
+        dw->orthogonal_constraints = g_malloc(4 * sizeof (struct OverlapConstraint *));
       }
       dwgrid[row][col] = dw;
 
@@ -132,8 +133,8 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
       g_string_sprintf(l->name, "%s / %s (%d,%d)", aw->name->str, dw->name->str, row, col);
 
       /* create overlap constraints */
-      oca = new_overlap_constraint(aw, l, aw->length);
-      ocd = new_overlap_constraint(dw, l, dw->length);
+      oca = make_overlap_constraint(aw, l, aw->length);
+      ocd = make_overlap_constraint(dw, l, dw->length);
       *constraintlist = g_slist_prepend(*constraintlist, oca);
       *constraintlist = g_slist_prepend(*constraintlist, ocd);
 
@@ -167,7 +168,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
   for (l = *wordlist; l != NULL; l = l->next) {
     GSList *l2, *samelen;
     struct wordvar *w1 = l->data;
-    struct uniqueness_constraint *uc;
+    struct UniquenessConstraint *uc;
 
     samelen = NULL;
 
@@ -179,7 +180,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
       samelen = g_slist_prepend(samelen, w2);
     }
 
-    uc = new_uniqueness_constraint(w1, samelen);
+    uc = make_uniqueness_constraint(w1, samelen);
     w1->unique_constraint = uc;
     *constraintlist = g_slist_prepend(*constraintlist, uc);
   }

@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
   for (ll = constraints; ll != NULL; ll = ll->next) {
     struct constraint *c = ll->data;
-    put_constraint_on_queue(c);
+    put_constraint_on_queue((void *) c);
   }
 
   run_constraints();

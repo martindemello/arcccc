@@ -8,7 +8,7 @@ struct wordvar {
   struct lettervar **letters;
   gint **letter_counts; // dimensions are [length][256] (pointers into lettervars)
   GPtrArray *stack; // for backtracking
-  struct overlap_constraint **orthogonal_constraints;
-  struct uniqueness_constraint *unique_constraint;
+  struct OverlapConstraint **orthogonal_constraints;
+  struct UniquenessConstraint *unique_constraint;
   GString *name;
 };

@@ -73,8 +73,8 @@ find_solution(GSList *words, GSList *letters, gchar *grid, gint depth)
           *(next_to_try->pos) = i;
         }
         
-        put_constraint_on_queue((struct constraint *) next_to_try->constraints[0]);
-        put_constraint_on_queue((struct constraint *) next_to_try->constraints[1]);
+        put_constraint_on_queue(next_to_try->constraints[0]);
+        put_constraint_on_queue(next_to_try->constraints[1]);
         find_solution(words, letters, grid, depth + 1);
 
         next_to_try->letters_allowed[i] = FALSE;

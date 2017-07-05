@@ -28,16 +28,18 @@ void set_on_queue_true(struct constraint* c) {
   c->on_queue = TRUE;
 }
 
+gboolean get_on_queue(struct constraint* c) {
+  return c->on_queue;
+}
+
 void
-put_constraint_on_queue(struct constraint *c)
+put_constraint_on_queue(void* c)
 {
   g_assert(c != NULL);
   if (queue == NULL) {
     queue = (void *) queue_new();
   }
-  if (c->on_queue == FALSE) {
-    queue = (void *) add_constraint_to_queue(queue, c);
-  }
+  queue = (void *) add_constraint_to_queue(queue, c);
 }
 
 gboolean
@@ -129,7 +131,8 @@ wordlist_remove_index(struct wordvar *w, int index)
     if ((-- (w->letter_counts[i][(guint) temp[i]])) == 0) {
       // the support for some letter has been removed, so trigger
       // the constraint in other direction
-      struct overlap_constraint *c = w->orthogonal_constraints[i];
+      OverlapConstraint* oc = w->orthogonal_constraints[i];
+      struct overlap_constraint *c = oc->constraint;
       if (c) {
         struct lettervar *l = c->l;
 
@@ -147,14 +150,14 @@ wordlist_remove_index(struct wordvar *w, int index)
           
         if (l->num_letters_allowed == 1) set_letter(l);
           
-        put_constraint_on_queue((struct constraint *) c);
+        put_constraint_on_queue((void *) oc);
       }
     }
   }
 
   // trigger uniqueness constraint if needed
   if (w->possible_values->len == 1) {
-    put_constraint_on_queue((struct constraint *) w->unique_constraint);
+    put_constraint_on_queue((void *) w->unique_constraint);
   }
 
   return (TRUE);
@@ -202,4 +205,8 @@ set_letter(struct lettervar *l)
       *(l->pos) = i;
       return;
     }
+}
+
+unsigned char get_tag(struct Constraint* c) {
+  return c->tag;
 }
