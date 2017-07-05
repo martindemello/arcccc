@@ -48,7 +48,7 @@ trigger_constraint(struct constraint *c)
 }
 
 
-static gboolean
+gboolean
 revise_word_letter(struct overlap_constraint *c)
 {
   // This function is called only when some entry in
@@ -73,7 +73,7 @@ revise_word_letter(struct overlap_constraint *c)
 }
 
 
-static gboolean
+gboolean
 revise_word_unique(struct uniqueness_constraint *c)
 {
   GSList *temp;
