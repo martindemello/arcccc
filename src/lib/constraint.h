@@ -9,11 +9,8 @@ typedef enum {
   VALUE_INSTANTIATION,
 } trigger_type;
 
-typedef gboolean (*constraint_function)(struct constraint *c);
-
 // the general form of a constraint
 struct constraint {
-  constraint_function func;
   gboolean on_queue;
   gint data;
 };
@@ -22,7 +19,6 @@ struct constraint {
 
 // word to letter constraint
 struct overlap_constraint {
-  constraint_function func;
   gboolean on_queue;
   struct wordvar *w;
   struct lettervar *l;
@@ -31,7 +27,6 @@ struct overlap_constraint {
 
 // uniqueness constraint
 struct uniqueness_constraint {
-  constraint_function func;
   gboolean on_queue;
   struct wordvar *w;
   GSList *other_words;
@@ -81,5 +76,3 @@ struct OverlapConstraint *make_overlap_constraint(struct wordvar *w,
 
 struct UniquenessConstraint *make_uniqueness_constraint(struct wordvar *w,
                                                         GSList *other_words);
-
-

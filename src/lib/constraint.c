@@ -43,14 +43,6 @@ put_constraint_on_queue(void* c)
 }
 
 gboolean
-trigger_constraint(struct constraint *c)
-{
-  // trigger the constraint, and return its success value
-  return ((c->func)(c));
-}
-
-
-gboolean
 revise_word_letter(struct overlap_constraint *c)
 {
   // This function is called only when some entry in
@@ -171,7 +163,6 @@ struct overlap_constraint *new_overlap_constraint(struct wordvar *w,
   
   c = g_malloc(sizeof (struct overlap_constraint));
 
-  c->func = (constraint_function) revise_word_letter;
   c->on_queue = FALSE;
   c->w = w;
   c->l = l;
@@ -187,7 +178,6 @@ struct uniqueness_constraint *new_uniqueness_constraint(struct wordvar *w,
   
   c = g_malloc(sizeof (struct uniqueness_constraint));
 
-  c->func = (constraint_function) revise_word_unique;
   c->on_queue = FALSE;
   c->w = w;
   c->other_words = other_words;
