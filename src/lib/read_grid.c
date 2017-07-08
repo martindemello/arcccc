@@ -48,7 +48,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
   /* scan out words, storing them in awgrid and dwgrid */
   for (row = 0; row < maxrow; row++) {
     for (col = 0; grid[row][col] != '\0'; col++) {
-      struct lettervar *l;
+      LetterVar *l;
       struct wordvar *aw, *dw;
       int wcountcur;
 
@@ -59,22 +59,9 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
       }
 
       // create new lettervar
-      l = g_malloc0(sizeof (struct lettervar));
-      if (grid[row][col] == '.') {
-        int i;
-        for (i =0; i < 256; i++) {
-          l->letters_allowed[i] = TRUE;
-        }
-        *p = '.';
-      } else {
-        l->letters_allowed[(guint) grid[row][col]] = TRUE;
-        *p = grid[row][col];
-      }
-      l->pos = p++;
-      l->stack = g_array_new(FALSE, FALSE, sizeof (struct lettervar));
-
+      *p = grid[row][col];
+      l = make_lettervar(grid[row][col], p++);
       *letterlist = g_slist_prepend(*letterlist, l);
-      
 
       // necessary to not increment twice on simultaneous new across&down
       wcountcur = wcount;
@@ -84,7 +71,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
         aw = awgrid[row][col-1];
         aw->length++;
         if (aw->length >= 4) {
-          aw->letters = g_realloc(aw->letters, (aw->length+1) * sizeof (struct lettervar *));
+          aw->letters = g_realloc(aw->letters, (aw->length+1) * sizeof (LetterVar *));
           aw->letter_counts = g_realloc(aw->letter_counts, (aw->length+1) * sizeof (gint *));
           aw->orthogonal_constraints = g_realloc(aw->orthogonal_constraints, 
                                                  (aw->length+1) * sizeof (struct OverlapConstraint *));
@@ -97,7 +84,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
         g_string_sprintf(aw->name, "%d across", wcount);
         aw->stack = g_ptr_array_new();
         // allocate space for 4 letters by default
-        aw->letters = g_malloc(4 * sizeof (struct lettervar *));
+        aw->letters = g_malloc(4 * sizeof (LetterVar *));
         aw->letter_counts = g_malloc(4 * sizeof (gint *));
         aw->orthogonal_constraints = g_malloc(4 * sizeof (struct OverlapConstraint *));
       }
@@ -109,7 +96,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
         dw = dwgrid[row-1][col];
         dw->length++;
         if (dw->length >= 4) {
-          dw->letters = g_realloc(dw->letters, (dw->length+1) * sizeof (struct lettervar *));
+          dw->letters = g_realloc(dw->letters, (dw->length+1) * sizeof (LetterVar *));
           dw->letter_counts = g_realloc(dw->letter_counts, (dw->length+1) * sizeof(gint *));
           dw->orthogonal_constraints = g_realloc(dw->orthogonal_constraints, 
                                                  (dw->length+1) * sizeof (struct OverlapConstraint *));
@@ -122,15 +109,14 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
         g_string_sprintf(dw->name, "%d down", wcount);
         dw->stack = g_ptr_array_new();
         // allocate space for 4 letters by default
-        dw->letters = g_malloc(4 * sizeof (struct lettervar *));
+        dw->letters = g_malloc(4 * sizeof (LetterVar *));
         dw->letter_counts = g_malloc(4 * sizeof(gint *));
         dw->orthogonal_constraints = g_malloc(4 * sizeof (struct OverlapConstraint *));
       }
       dwgrid[row][col] = dw;
 
       // useful
-      l->name = g_string_new("");
-      g_string_sprintf(l->name, "%s / %s (%d,%d)", aw->name->str, dw->name->str, row, col);
+      lettervar_set_name(l, aw->name->str, dw->name->str, row, col);
 
       /* create overlap constraints */
       oca = make_overlap_constraint(aw, l, aw->length);
@@ -139,8 +125,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
       *constraintlist = g_slist_prepend(*constraintlist, ocd);
 
       /* link letters and constraints */
-      l->constraints[0] = oca;
-      l->constraints[1] = ocd;
+      lettervar_set_constraints(l, oca, ocd);
       
       /* connect across and down */
       aw->orthogonal_constraints[aw->length] = ocd;

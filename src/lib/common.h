@@ -8,4 +8,3 @@ void put_constraint_on_queue(void* c);
 void find_solution(GSList *words, GSList *letters, gchar *grid, gint depth);
 
 #define MAX_GRID 128
-

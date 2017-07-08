@@ -46,6 +46,7 @@ gboolean get_on_queue(struct constraint* c);
 gboolean trigger_constraint(struct constraint *c);
 gboolean revise_word_letter(struct overlap_constraint *c);
 gboolean revise_word_unique(struct uniqueness_constraint *c);
+gchar* wordlist_swap_index_with_end(GPtrArray* wordlist, int index);
 
 // Rust exports
 
@@ -76,3 +77,5 @@ struct OverlapConstraint *make_overlap_constraint(struct wordvar *w,
 
 struct UniquenessConstraint *make_uniqueness_constraint(struct wordvar *w,
                                                         GSList *other_words);
+
+void set_letter(struct lettervar *l);

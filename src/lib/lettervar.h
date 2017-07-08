@@ -13,3 +13,5 @@ struct lettervar {
   GString *name;
   gchar *pos;
 };
+
+typedef struct lettervar LetterVar;

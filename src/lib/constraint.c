@@ -9,9 +9,6 @@
 #include "lettervar.h"
 #include "wordvar.h"
 
-static gboolean wordlist_remove_index(struct wordvar *w, int index);
-static void set_letter(struct lettervar *l);
-
 static void *queue = NULL;
 
 gboolean
@@ -49,14 +46,14 @@ revise_word_letter(struct overlap_constraint *c)
   // c->l->letters_allowed has changed from TRUE to FALSE.
 
   struct wordvar *w = c->w;
-  struct lettervar *l = c->l;
+  LetterVar *l = c->l;
   gint offset = c->offset;
   gint i;
 
   // loop through the word values, removing impossible ones
   for (i = 0; i < w->possible_values->len; i++) {
     gchar ch = ((gchar *) g_ptr_array_index(w->possible_values, i))[offset];
-    if (l->letters_allowed[(guint) ch] == FALSE) {
+    if (lettervar_letter_allowed(l, ch) == FALSE) {
       if (wordlist_remove_index(w, i) == FALSE) return (FALSE);
       i--;
     } 
@@ -101,62 +98,18 @@ revise_word_unique(struct uniqueness_constraint *c)
   return (TRUE);
 }
 
-static gboolean
-wordlist_remove_index(struct wordvar *w, int index)
-{
-  GPtrArray *wordlist = w->possible_values;
+// swap pointer to end of list, trim length of list by one.
+gchar* wordlist_swap_index_with_end(GPtrArray* wordlist, int index) {
   gchar *temp;
-  gint i;
-
-#if DEBUG
-  printf("removing word %s\n", g_ptr_array_index(wordlist, index));
-#endif
-
-  // swap pointer to end of list, trim length of list by one.
   temp = g_ptr_array_index(wordlist, index);
   g_ptr_array_index(wordlist, index) = g_ptr_array_index(wordlist, wordlist->len-1);
   g_ptr_array_index(wordlist, wordlist->len-1) = temp;
   wordlist->len--;
-
-  // loop over characters, decrementing counts in corresponding lettervar
-  for (i = 0; i < w->length; i++) {
-    if ((-- (w->letter_counts[i][(guint) temp[i]])) == 0) {
-      // the support for some letter has been removed, so trigger
-      // the constraint in other direction
-      OverlapConstraint* oc = w->orthogonal_constraints[i];
-      struct overlap_constraint *c = oc->constraint;
-      if (c) {
-        struct lettervar *l = c->l;
-
-        // it's possible that this letter has already been removed
-        if (l->letters_allowed[(guint) temp[i]] == FALSE) continue;
-        
-        l->letters_allowed[(guint) temp[i]] = FALSE;
-        l->num_letters_allowed--;
-        if (l->num_letters_allowed == 0) {
-#if DEBUG
-          printf("died for lack of letters\n");
-#endif
-          return (FALSE);
-        }
-          
-        if (l->num_letters_allowed == 1) set_letter(l);
-          
-        put_constraint_on_queue((void *) oc);
-      }
-    }
-  }
-
-  // trigger uniqueness constraint if needed
-  if (w->possible_values->len == 1) {
-    put_constraint_on_queue((void *) w->unique_constraint);
-  }
-
-  return (TRUE);
+  return temp;
 }
 
 struct overlap_constraint *new_overlap_constraint(struct wordvar *w, 
-                                                  struct lettervar *l,
+                                                  LetterVar *l,
                                                   gint offset)
 {
   struct overlap_constraint *c;
@@ -183,18 +136,6 @@ struct uniqueness_constraint *new_uniqueness_constraint(struct wordvar *w,
   c->other_words = other_words;
 
   return (c);
-}
-
-static void
-set_letter(struct lettervar *l)
-{
-  gint i;
-
-  for (i = 0; i < 256; i++) 
-    if (l->letters_allowed[i]) {
-      *(l->pos) = i;
-      return;
-    }
 }
 
 unsigned char get_tag(struct Constraint* c) {

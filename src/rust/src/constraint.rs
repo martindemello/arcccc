@@ -1,15 +1,16 @@
 pub struct constraint;
-pub struct overlap_constraint;
 pub struct uniqueness_constraint;
 pub struct wordvar;
-pub struct lettervar;
 pub struct GSList;
+
+use lettervar::LetterVar;
+use wordvar::WordVar;
 
 #[link(name = "arccc")]
 extern {
     pub fn new_overlap_constraint(
         w: *mut wordvar,
-        l: *mut lettervar,
+        l: *mut LetterVar,
         offset: isize) -> *mut overlap_constraint;
     pub fn new_uniqueness_constraint(
         w: *mut wordvar,
@@ -38,9 +39,17 @@ pub trait Constraint {
 
 // word to letter constraint
 #[repr(C)]
+pub struct overlap_constraint {
+  pub on_queue: i32,
+  pub w: *mut WordVar,
+  pub l: *mut LetterVar,
+  pub offset: i32
+}
+
+#[repr(C)]
 pub struct OverlapConstraint {
     tag: ConstraintType,
-    constraint: *mut overlap_constraint
+    pub constraint: *mut overlap_constraint
 }
 
 // uniqueness constraint
@@ -51,7 +60,7 @@ pub struct UniquenessConstraint {
 }
 
 impl OverlapConstraint {
-    fn new(w: *mut wordvar, l: *mut lettervar, offset: isize) -> OverlapConstraint {
+    fn new(w: *mut wordvar, l: *mut LetterVar, offset: isize) -> OverlapConstraint {
         unsafe {
             let c = new_overlap_constraint(w, l, offset);
             OverlapConstraint {
@@ -127,7 +136,7 @@ impl Constraint for UniquenessConstraint {
 }
        
 #[no_mangle]
-pub unsafe extern "C" fn make_overlap_constraint(w: *mut wordvar, l: *mut lettervar, offset: isize) -> *mut OverlapConstraint {
+pub unsafe extern "C" fn make_overlap_constraint(w: *mut wordvar, l: *mut LetterVar, offset: isize) -> *mut OverlapConstraint {
     Box::into_raw(Box::new(
             OverlapConstraint::new(w, l, offset)))
 }
