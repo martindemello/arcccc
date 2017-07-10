@@ -17,18 +17,6 @@ run_constraints(void)
   return run_constraint_queue(queue);
 }
 
-void set_on_queue_false(struct constraint* c) {
-  c->on_queue = FALSE;
-}
-
-void set_on_queue_true(struct constraint* c) {
-  c->on_queue = TRUE;
-}
-
-gboolean get_on_queue(struct constraint* c) {
-  return c->on_queue;
-}
-
 void
 put_constraint_on_queue(void* c)
 {
@@ -100,42 +88,12 @@ revise_word_unique(struct uniqueness_constraint *c)
 
 // swap pointer to end of list, trim length of list by one.
 gchar* wordlist_swap_index_with_end(GPtrArray* wordlist, int index) {
-  gchar *temp;
-  temp = g_ptr_array_index(wordlist, index);
-  g_ptr_array_index(wordlist, index) = g_ptr_array_index(wordlist, wordlist->len-1);
+  gchar *temp = g_ptr_array_index(wordlist, index);
+  g_ptr_array_index(wordlist, index) =
+    g_ptr_array_index(wordlist, wordlist->len-1);
   g_ptr_array_index(wordlist, wordlist->len-1) = temp;
   wordlist->len--;
   return temp;
-}
-
-struct overlap_constraint *new_overlap_constraint(struct wordvar *w, 
-                                                  LetterVar *l,
-                                                  gint offset)
-{
-  struct overlap_constraint *c;
-  
-  c = g_malloc(sizeof (struct overlap_constraint));
-
-  c->on_queue = FALSE;
-  c->w = w;
-  c->l = l;
-  c->offset = offset;
-
-  return (c);
-}
-
-struct uniqueness_constraint *new_uniqueness_constraint(struct wordvar *w,
-                                                        GSList *other_words)
-{
-  struct uniqueness_constraint *c;
-  
-  c = g_malloc(sizeof (struct uniqueness_constraint));
-
-  c->on_queue = FALSE;
-  c->w = w;
-  c->other_words = other_words;
-
-  return (c);
 }
 
 unsigned char get_tag(struct Constraint* c) {
