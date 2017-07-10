@@ -53,6 +53,14 @@ pub struct OverlapConstraint {
 }
 
 // uniqueness constraint
+
+#[repr(C)]
+struct uniqueness_constraint {
+  on_queue: i32,
+  w: *mut WordVar,
+  other_words: *mut GSList
+}
+
 #[repr(C)]
 pub struct UniquenessConstraint {
     tag: ConstraintType,
