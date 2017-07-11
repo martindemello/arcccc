@@ -15,7 +15,7 @@ static void pop_state(GSList *words, GSList *letters);
 extern gint total;
 
 void
-find_solution(GSList *words, GSList *letters, gchar *grid, gint depth)
+find_solution(Queue* queue, GSList *words, GSList *letters, gchar *grid, gint depth)
 {
   GSList *ll;
   gchar gridsnap[MAX_GRID*MAX_GRID];
@@ -31,7 +31,7 @@ find_solution(GSList *words, GSList *letters, gchar *grid, gint depth)
   push_state(words, letters);
   strcpy(gridsnap, grid);
   
-  if (run_constraints() == TRUE) {
+  if (run_constraints(queue) == TRUE) {
     gint min = 257;
     struct lettervar *next_to_try = NULL;
     gboolean letters_to_try[256];
@@ -73,9 +73,9 @@ find_solution(GSList *words, GSList *letters, gchar *grid, gint depth)
           *(next_to_try->pos) = i;
         }
         
-        put_constraint_on_queue(next_to_try->constraints[0]);
-        put_constraint_on_queue(next_to_try->constraints[1]);
-        find_solution(words, letters, grid, depth + 1);
+        put_constraint_on_queue(queue, next_to_try->constraints[0]);
+        put_constraint_on_queue(queue, next_to_try->constraints[1]);
+        find_solution(queue, words, letters, grid, depth + 1);
 
         next_to_try->letters_allowed[i] = FALSE;
       }

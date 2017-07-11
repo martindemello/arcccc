@@ -1,6 +1,7 @@
 use constraint::Constraint;
 use constraint::OverlapConstraint;
 use constraint::UniquenessConstraint;
+use constraint_queue::Queue;
 use lettervar::LetterVar;
 use lettervar;
 use std;
@@ -14,7 +15,7 @@ extern crate glib_sys;
 extern {
     pub fn wordlist_swap_index_with_end(w: *mut glib_sys::GPtrArray, i: i32) -> *mut u8;
 
-    pub fn put_constraint_on_queue(c: *mut Constraint);
+    pub fn put_constraint_on_queue(q: *mut Queue, c: *mut Constraint);
 }
 
 #[repr(C)]
@@ -30,7 +31,8 @@ pub struct WordVar {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn wordlist_remove_index(wptr: *mut WordVar, index: i32) -> i32 {
+pub unsafe extern "C" fn wordlist_remove_index(
+    queue: *mut Queue, wptr: *mut WordVar, index: i32) -> i32 {
     let mut w = Box::from_raw(wptr);
     let temp = wordlist_swap_index_with_end(w.possible_values, index);
     // loop over characters, decrementing counts in corresponding lettervar
@@ -58,13 +60,13 @@ pub unsafe extern "C" fn wordlist_remove_index(wptr: *mut WordVar, index: i32) -
                     lettervar::set_letter(l)
                 }
 
-                put_constraint_on_queue(*oc);
+                put_constraint_on_queue(queue, *oc);
             }
         }
     }
 
     if (*w.possible_values).len == 1 {
-        put_constraint_on_queue(w.unique_constraint);
+        put_constraint_on_queue(queue, w.unique_constraint);
     }
 
     Box::into_raw(w);

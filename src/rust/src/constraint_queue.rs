@@ -9,7 +9,7 @@ extern {
 // TODO: this is actually a stack; arcccc has a confusingly named 'queue' variable that is actually
 // a stack, so we follow that here while we have part of the code in C and part in rust. rename
 // when everything is in rust.
-type Queue = Vec<*mut Constraint>;
+pub type Queue = Vec<*mut Constraint>;
 
 #[no_mangle]
 pub extern "C" fn queue_new() -> *mut Queue {
@@ -31,7 +31,7 @@ pub unsafe extern "C" fn run_constraint_queue(queue: *mut Queue) -> bool {
             }
         };
         if !done {
-            done = !c.run();
+            done = !c.run(queue);
         };
         c.set_unqueued();
         Box::into_raw(c);

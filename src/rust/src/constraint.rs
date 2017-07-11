@@ -2,6 +2,7 @@ pub struct constraint;
 
 extern crate glib_sys;
 
+use constraint_queue::Queue;
 use lettervar::LetterVar;
 use wordvar::WordVar;
 use std;
@@ -18,12 +19,12 @@ extern {
 #[repr(u8)]
 #[derive(Debug)]
 pub enum ConstraintType {
-    OVERLAP,
-    UNIQUENESS
+    OVERLAP = 0,
+    UNIQUENESS = 1
 }
 
 pub trait Constraint {
-    fn run(&mut self) -> bool;
+    fn run(&mut self, queue: *mut Queue) -> bool;
     fn set_queued(&mut self);
     fn set_unqueued(&mut self);
     fn get_queued(&mut self) -> bool;
@@ -91,9 +92,9 @@ impl UniquenessConstraint {
 }
 
 impl Constraint for OverlapConstraint {
-    fn run(&mut self) -> bool {
+    fn run(&mut self, queue: *mut Queue) -> bool {
         unsafe {
-            revise_word_letter(self.constraint) != 0
+            revise_word_letter(queue, self.constraint) != 0
         }
     }
 
@@ -117,9 +118,9 @@ impl Constraint for OverlapConstraint {
 }       
 
 impl Constraint for UniquenessConstraint {
-    fn run(&mut self) -> bool {
+    fn run(&mut self, queue: *mut Queue) -> bool {
         unsafe {
-            revise_word_unique(self.constraint) != 0
+            revise_word_unique(queue, self.constraint) != 0
         }
     }
     
@@ -142,7 +143,8 @@ impl Constraint for UniquenessConstraint {
     }
 }
        
-pub unsafe fn revise_word_letter(c: *mut overlap_constraint) -> i32 {
+pub unsafe fn revise_word_letter(
+    queue: *mut Queue, c: *mut overlap_constraint) -> i32 {
   // This function is called only when some entry in
   // c->l->letters_allowed has changed from TRUE to FALSE.
 
@@ -156,7 +158,7 @@ pub unsafe fn revise_word_letter(c: *mut overlap_constraint) -> i32 {
       let cptr = wordlist_ptr_to_index(possible_values, i);
       let ch = *(cptr.offset((*c).offset as isize));
       if lettervar::lettervar_letter_allowed(l, ch) == 0 {
-          if wordvar::wordlist_remove_index(w, i) == 0 {
+          if wordvar::wordlist_remove_index(queue, w, i) == 0 {
               return 0;
           }
           i = i - 1;
@@ -172,7 +174,8 @@ pub unsafe fn revise_word_letter(c: *mut overlap_constraint) -> i32 {
   }
 }
 
-pub unsafe fn revise_word_unique(c: *mut uniqueness_constraint) -> i32 {
+pub unsafe fn revise_word_unique(
+    queue: *mut Queue, c: *mut uniqueness_constraint) -> i32 {
     let w = (*c).w;
     let pv = (*w).possible_values;
     let unique_word = wordlist_ptr_to_index(pv, 0);
@@ -188,7 +191,7 @@ pub unsafe fn revise_word_unique(c: *mut uniqueness_constraint) -> i32 {
         let wordlist = (*ow).possible_values;
         for i in 0 .. (*wordlist).len {
             if wordlist_ptr_to_index(wordlist, i as i32) == unique_word {
-                if wordvar::wordlist_remove_index(ow, i as i32) == 0 {
+                if wordvar::wordlist_remove_index(queue, ow, i as i32) == 0 {
                     return 0
                 }
                 // fail if the word list is now empty

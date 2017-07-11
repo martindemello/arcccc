@@ -6,24 +6,15 @@
 
 #include "common.h"
 #include "constraint.h"
-#include "lettervar.h"
-#include "wordvar.h"
 
-static void *queue = NULL;
-
-gboolean
-run_constraints(void)
+gboolean run_constraints(Queue* queue)
 {
   return run_constraint_queue(queue);
 }
 
-void
-put_constraint_on_queue(void* c)
+void put_constraint_on_queue(Queue* queue, void* c)
 {
   g_assert(c != NULL);
-  if (queue == NULL) {
-    queue = (void *) queue_new();
-  }
   queue = (void *) add_constraint_to_queue(queue, c);
 }
 
