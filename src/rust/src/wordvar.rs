@@ -19,7 +19,7 @@ extern {
 
 #[repr(C)]
 pub struct WordVar {
-    possible_values: *mut glib_sys::GPtrArray,
+    pub possible_values: *mut glib_sys::GPtrArray,
     length: i32,
     letters: *mut *mut LetterVar,
     letter_counts: *mut *mut i32,
