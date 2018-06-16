@@ -13,6 +13,7 @@ extern crate glib_sys;
 
 #[link(name = "arccc")]
 extern {
+    pub fn wordlist_ptr_to_index(w: *mut glib_sys::GPtrArray, i: i32) -> *mut u8;
     pub fn wordlist_swap_index_with_end(w: *mut glib_sys::GPtrArray, i: i32) -> *mut u8;
 
     pub fn put_constraint_on_queue(q: *mut Queue, c: *mut Constraint);
@@ -28,6 +29,46 @@ pub struct WordVar {
     orthogonal_constraints: *mut *mut OverlapConstraint,
     unique_constraint: *mut UniquenessConstraint,
     name: *mut glib_sys::GString
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn init_wordvars(
+    glib_sys::GSList *words,
+    glib_sys::GSList *letters, 
+    glib_sys:GPtrArray *dictionary) {
+
+    let mut p = words;
+    while p !=  std::ptr::null_mut() {
+        let w: *mut WordVar = (*p).data;
+        (*w).possible_values = glib_sys::g_ptr_array_new();
+
+        for i in 0 .. (*dictionary).len {
+            let dword = wordlist_ptr_to_index(dictionary, i as i32);
+
+      // check that the lengths match
+      if (strlen(dword) != w->length) continue;
+
+      // check that the word matches the constraints
+      for (j = 0; j < w->length; j++) {
+        if (w->letters[j]->letters_allowed[(guint) dword[j]] != TRUE) break;
+      }
+      if (j < w->length) continue;
+      
+      // add this word to the possible values
+      g_ptr_array_add(w->possible_values, dword);
+      for (j = 0; j < w->length; j++) {
+        w->letter_counts[j][(guint) dword[j]]++;
+      }
+    }
+
+    if (w->possible_values->len == 0) {
+      printf("Die: No words for %s.\n", w->name->str);
+      exit(-1);
+    }
+  }
+
+
+
 }
 
 #[no_mangle]
