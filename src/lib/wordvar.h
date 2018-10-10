@@ -12,3 +12,5 @@ struct wordvar {
   struct UniquenessConstraint *unique_constraint;
   GString *name;
 };
+
+void init_wordvars(GSList* words, GPtrArray* dictionary);

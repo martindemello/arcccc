@@ -7,9 +7,6 @@ use lettervar;
 use std;
 
 
-#[repr(C)]
-pub struct wordlist;
-
 extern crate glib_sys;
 extern crate libc;
 
@@ -36,7 +33,6 @@ pub struct WordVar {
 #[no_mangle]
 pub unsafe extern "C" fn init_wordvars(
     words: *mut glib_sys::GSList,
-    _letters: *mut glib_sys::GSList,
     dictionary: *mut glib_sys::GPtrArray) {
 
     let mut p = words;
