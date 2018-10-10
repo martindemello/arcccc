@@ -6,6 +6,7 @@
 
 #include "common.h"
 #include "constraint.h"
+#include "constraint_queue.h"
 
 gboolean run_constraints(Queue* queue)
 {

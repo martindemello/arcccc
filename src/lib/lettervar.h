@@ -1,6 +1,6 @@
 // lettervar.h - 
 
-struct OverlapConstraint;
+typedef struct OverlapConstraint OverlapConstraint;
 
 
 // constraint between a letter square and one word in that position
@@ -15,3 +15,17 @@ struct lettervar {
 };
 
 typedef struct lettervar LetterVar;
+
+LetterVar* make_lettervar(char chr, char* p);
+    
+void lettervar_set_name(LetterVar* lptr, GString* aw, GString* dw, int row, int col);
+    
+void lettervar_set_constraints(LetterVar* lptr, OverlapConstraint* oca, OverlapConstraint* ocd);
+    
+void set_letter(LetterVar* lptr);
+
+int lettervar_letter_allowed(LetterVar* lptr, char i);
+
+int lettervar_set_letter_allowed(LetterVar* lptr, char i, int t);
+
+int lettervar_num_letters_allowed(LetterVar* lptr);

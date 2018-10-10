@@ -8,6 +8,7 @@
 #include "wordvar.h"
 #include "lettervar.h"
 #include "constraint.h"
+#include "constraint_queue.h"
 
 gint total = 0;
 

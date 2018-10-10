@@ -116,7 +116,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
       dwgrid[row][col] = dw;
 
       // useful
-      lettervar_set_name(l, aw->name->str, dw->name->str, row, col);
+      lettervar_set_name(l, aw->name, dw->name, row, col);
 
       /* create overlap constraints */
       oca = make_overlap_constraint(aw, l, aw->length);

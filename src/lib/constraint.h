@@ -53,9 +53,11 @@ struct OverlapConstraint {
 
 typedef struct OverlapConstraint OverlapConstraint;
 
-struct OverlapConstraint *make_overlap_constraint(struct wordvar *w,
-                                                  struct lettervar *l,
-                                                  gint offset);
+OverlapConstraint *make_overlap_constraint(struct wordvar *w,
+                                           struct lettervar *l,
+                                           gint offset);
 
-struct UniquenessConstraint *make_uniqueness_constraint(struct wordvar *w,
-                                                        GSList *other_words);
+UniquenessConstraint *make_uniqueness_constraint(struct wordvar *w,
+                                                 GSList *other_words);
+
+
