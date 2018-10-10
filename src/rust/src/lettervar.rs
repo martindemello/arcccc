@@ -46,7 +46,7 @@ pub unsafe extern "C" fn lettervar_set_name(
     aw: *mut glib_sys::GString, dw: *mut glib_sys::GString,
     row: i32, col: i32) {
     let mut l = Box::from_raw(lptr);
-    let mut cstr = CString::new("").unwrap();
+    let cstr = CString::new("").unwrap();
     let fmtstr =  CString::new("%s / %s (%d,%d)").unwrap();
     l.name = glib_sys::g_string_new(cstr.as_ptr());
     glib_sys::g_string_printf(l.name, fmtstr.as_ptr(), aw, dw, row, col);
@@ -67,7 +67,7 @@ pub unsafe extern "C" fn lettervar_set_constraints(
     
 #[no_mangle]
 pub unsafe extern "C" fn set_letter(lptr: *mut LetterVar) {
-    let mut l = Box::from_raw(lptr);
+    let l = Box::from_raw(lptr);
     for i in 0..256 {
         if l.letters_allowed[i] != 0 {
             *(l.pos) = i as u8;
@@ -81,7 +81,7 @@ pub unsafe extern "C" fn set_letter(lptr: *mut LetterVar) {
 pub unsafe extern "C" fn lettervar_letter_allowed(
     lptr: *mut LetterVar,
     i: u8) -> i32 {
-    let mut l = Box::from_raw(lptr);
+    let l = Box::from_raw(lptr);
     let out = l.letters_allowed[i as usize];
     Box::into_raw(l);
     out
@@ -107,7 +107,7 @@ pub unsafe extern "C" fn lettervar_set_letter_allowed(
 #[no_mangle]
 pub unsafe extern "C" fn lettervar_num_letters_allowed(
     lptr: *mut LetterVar) -> i32 {
-    let mut l = Box::from_raw(lptr);
+    let l = Box::from_raw(lptr);
     let out = l.num_letters_allowed;
     Box::into_raw(l);
     out

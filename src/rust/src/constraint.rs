@@ -62,31 +62,27 @@ pub struct UniquenessConstraint {
 
 impl OverlapConstraint {
     fn new(w: *mut WordVar, l: *mut LetterVar, offset: i32) -> OverlapConstraint {
-        unsafe {
-            OverlapConstraint {
-                tag: ConstraintType::OVERLAP,
-                constraint: Box::into_raw(Box::new(overlap_constraint {
-                    on_queue: 0,
-                    w: w,
-                    l: l,
-                    offset: offset
-                }))
-            }
+        OverlapConstraint {
+            tag: ConstraintType::OVERLAP,
+            constraint: Box::into_raw(Box::new(overlap_constraint {
+                on_queue: 0,
+                w: w,
+                l: l,
+                offset: offset
+            }))
         }
     }
 }
         
 impl UniquenessConstraint {
     fn new(w: *mut WordVar, other: *mut glib_sys::GSList) -> UniquenessConstraint {
-        unsafe {
-            UniquenessConstraint {
-                tag: ConstraintType::UNIQUENESS,
-                constraint: Box::into_raw(Box::new(uniqueness_constraint {
-                    on_queue: 0,
-                    w: w,
-                    other_words: other
-                }))
-            }
+        UniquenessConstraint {
+            tag: ConstraintType::UNIQUENESS,
+            constraint: Box::into_raw(Box::new(uniqueness_constraint {
+                on_queue: 0,
+                w: w,
+                other_words: other
+            }))
         }
     }
 }
@@ -150,7 +146,7 @@ pub unsafe fn revise_word_letter(
 
   let w = (*c).w;
   let l = (*c).l;
-  let mut possible_values = (*w).possible_values;
+  let possible_values = (*w).possible_values;
 
   // loop through the word values, removing impossible ones
   let mut i: i32 = 0;

@@ -90,15 +90,14 @@ pub unsafe extern "C" fn init_wordvars(
         Box::into_raw(w);
         p = (*p).next;
     }
-
-
-
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn wordlist_remove_index(
-    queue: *mut Queue, wptr: *mut WordVar, index: i32) -> i32 {
-    let mut w = Box::from_raw(wptr);
+pub unsafe fn wordlist_remove_index(
+    queue: *mut Queue,
+    wptr: *mut WordVar,
+    index: i32) -> i32 {
+    let w = Box::from_raw(wptr);
     let temp = wordlist_swap_index_with_end(w.possible_values, index);
     // loop over characters, decrementing counts in corresponding lettervar
     for i in 0 .. w.length {
