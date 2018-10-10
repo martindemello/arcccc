@@ -25,7 +25,7 @@ pub fn read_words(filename: *const c_char) -> *mut glib_sys::GPtrArray {
             if l.chars().all(|c| c.is_lowercase()) { // TODO: is_ascii
                 let s = CString::new(l).unwrap();
                 let c = glib_sys::g_string_chunk_insert(chunk, s.as_ptr());
-                glib_sys::g_ptr_array_add(out, (c as *mut libc::c_void));
+                glib_sys::g_ptr_array_add(out, c as *mut libc::c_void);
             }
         }
         out

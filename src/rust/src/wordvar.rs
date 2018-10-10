@@ -6,10 +6,12 @@ use lettervar::LetterVar;
 use lettervar;
 use std;
 
+
 #[repr(C)]
 pub struct wordlist;
 
 extern crate glib_sys;
+extern crate libc;
 
 #[link(name = "arccc")]
 extern {
@@ -33,39 +35,61 @@ pub struct WordVar {
 
 #[no_mangle]
 pub unsafe extern "C" fn init_wordvars(
-    glib_sys::GSList *words,
-    glib_sys::GSList *letters, 
-    glib_sys:GPtrArray *dictionary) {
+    words: *mut glib_sys::GSList,
+    _letters: *mut glib_sys::GSList,
+    dictionary: *mut glib_sys::GPtrArray) {
 
     let mut p = words;
-    while p !=  std::ptr::null_mut() {
-        let w: *mut WordVar = (*p).data;
-        (*w).possible_values = glib_sys::g_ptr_array_new();
+    while p != std::ptr::null_mut() {
+        let wptr = (*p).data as *mut WordVar; 
+        let mut w = Box::from_raw(wptr);
+
+        w.possible_values = glib_sys::g_ptr_array_new();
 
         for i in 0 .. (*dictionary).len {
             let dword = wordlist_ptr_to_index(dictionary, i as i32);
 
-      // check that the lengths match
-      if (strlen(dword) != w->length) continue;
+            // check that the lengths match
+            if libc::strlen(dword as *const i8) != w.length as usize {
+                continue;
+            }
 
-      // check that the word matches the constraints
-      for (j = 0; j < w->length; j++) {
-        if (w->letters[j]->letters_allowed[(guint) dword[j]] != TRUE) break;
-      }
-      if (j < w->length) continue;
-      
-      // add this word to the possible values
-      g_ptr_array_add(w->possible_values, dword);
-      for (j = 0; j < w->length; j++) {
-        w->letter_counts[j][(guint) dword[j]]++;
-      }
-    }
+            // check that the word matches the constraints
+            let mut flag = false;
+            for j in 0 .. w.length {
+                let mut letters = Box::from_raw(w.letters);
+                let letter = letters.offset(j as isize);
+                let index = dword.offset(j as isize) as u8;
+                if lettervar::lettervar_letter_allowed(letter, index) == 0 {
+                    flag = true;
+                    break;
+                }
+            }
+            if flag {
+                continue;
+            }
 
-    if (w->possible_values->len == 0) {
-      printf("Die: No words for %s.\n", w->name->str);
-      exit(-1);
+            // add this word to the possible values
+            glib_sys::g_ptr_array_add(w.possible_values, dword as *mut libc::c_void);
+            for j in 0 .. w.length {
+                let mut lc_j_ptr = w.letter_counts.offset(j as isize);
+                let dw_ptr = dword.offset(j as isize);
+                let dw = *dw_ptr as isize;
+                let mut lc = *lc_j_ptr;
+                let mut lc_j_dw_ptr = lc.offset(dw);
+                lc_j_dw_ptr.write(*lc_j_dw_ptr + 1);
+            }
+        }
+
+        if (*w.possible_values).len == 0 {
+            let name = std::ffi::CStr::from_ptr((*w.name).str);
+            println!("Die: No words for {}", name.to_str().unwrap());
+            std::process::exit(-1);
+        }
+
+        Box::into_raw(w);
+        p = (*p).next;
     }
-  }
 
 
 
