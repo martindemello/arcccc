@@ -18,7 +18,8 @@ pub struct LetterVar {
 }
 
 impl LetterVar {
-  unsafe fn new(chr: u8, p: *mut u8) -> LetterVar {
+  #[no_mangle]
+  pub unsafe extern "C" fn new(chr: u8, p: *mut u8) -> LetterVar {
     let f = if chr == 46 { 1 } else { 0 };
     let mut out = LetterVar {
         letter_counts: [[0; 256]; 2],
@@ -37,7 +38,8 @@ impl LetterVar {
 
 #[no_mangle]
 pub unsafe extern "C" fn make_lettervar(chr: u8, p: *mut u8) -> *mut LetterVar {
-    Box::into_raw(Box::new(LetterVar::new(chr, p)))
+    let l = Box::into_raw(Box::new(LetterVar::new(chr, p)));
+    l
 }
     
 #[no_mangle]
