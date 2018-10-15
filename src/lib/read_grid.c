@@ -49,7 +49,7 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
   for (row = 0; row < maxrow; row++) {
     for (col = 0; grid[row][col] != '\0'; col++) {
       LetterVar *l;
-      struct wordvar *aw, *dw;
+      WordVar *aw, *dw;
       int wcountcur;
 
       /* at a block? */

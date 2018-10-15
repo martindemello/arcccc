@@ -24,7 +24,7 @@ void lettervar_set_constraints(LetterVar* lptr, OverlapConstraint* oca, OverlapC
     
 void set_letter(LetterVar* lptr);
 
-int lettervar_letter_allowed(LetterVar* lptr, char i);
+gboolean lettervar_letter_allowed(LetterVar* lptr, char i);
 
 int lettervar_set_letter_allowed(LetterVar* lptr, char i, int t);
 

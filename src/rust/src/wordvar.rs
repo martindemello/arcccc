@@ -53,10 +53,10 @@ pub unsafe extern "C" fn init_wordvars(
             // check that the word matches the constraints
             let mut flag = false;
             for j in 0 .. w.length {
-                let mut letters = Box::from_raw(w.letters);
-                let letter = letters.offset(j as isize);
-                let index = dword.offset(j as isize) as u8;
-                if lettervar::lettervar_letter_allowed(letter, index) == 0 {
+                let letter : *mut LetterVar = *(w.letters.offset(j as isize));
+                let index = dword.offset(j as isize);
+                let ix = *index as u8;
+                if lettervar::lettervar_letter_allowed(letter, ix) == 0 {
                     flag = true;
                     break;
                 }

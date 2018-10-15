@@ -13,4 +13,6 @@ struct wordvar {
   GString *name;
 };
 
+typedef struct wordvar WordVar;
+
 void init_wordvars(GSList* words, GPtrArray* dictionary);

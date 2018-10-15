@@ -14,37 +14,7 @@ init_vars(GSList *words, GSList *letters, GPtrArray *dictionary)
 {
   GSList *p;
 
-  for (p = words; p != NULL; p = p->next) {
-    struct wordvar *w = p->data;
-    gint i;
-
-    w->possible_values = g_ptr_array_new();
-
-    for (i = 0; i < dictionary->len; i++) {
-      gchar *dword = g_ptr_array_index(dictionary, i);
-      gint j;
-
-      // check that the lengths match
-      if (strlen(dword) != w->length) continue;
-
-      // check that the word matches the constraints
-      for (j = 0; j < w->length; j++) {
-        if (w->letters[j]->letters_allowed[(guint) dword[j]] != TRUE) break;
-      }
-      if (j < w->length) continue;
-      
-      // add this word to the possible values
-      g_ptr_array_add(w->possible_values, dword);
-      for (j = 0; j < w->length; j++) {
-        w->letter_counts[j][(guint) dword[j]]++;
-      }
-    }
-
-    if (w->possible_values->len == 0) {
-      printf("Die: No words for %s.\n", w->name->str);
-      exit(-1);
-    }
-  }
+  init_wordvars(words, dictionary);
 
   for (p = letters; p != NULL; p = p->next) {
     struct lettervar *l = p->data;

@@ -38,8 +38,7 @@ impl LetterVar {
 
 #[no_mangle]
 pub unsafe extern "C" fn make_lettervar(chr: u8, p: *mut u8) -> *mut LetterVar {
-    let l = Box::into_raw(Box::new(LetterVar::new(chr, p)));
-    l
+    Box::into_raw(Box::new(LetterVar::new(chr, p)))
 }
     
 #[no_mangle]
@@ -84,7 +83,7 @@ pub unsafe extern "C" fn lettervar_letter_allowed(
     lptr: *mut LetterVar,
     i: u8) -> i32 {
     let l = Box::from_raw(lptr);
-    let out = l.letters_allowed[i as usize];
+    let out : i32 = l.letters_allowed[i as usize];
     Box::into_raw(l);
     out
 }
@@ -98,8 +97,10 @@ pub unsafe extern "C" fn lettervar_set_letter_allowed(
     l.letters_allowed[i as usize] = t;
     if t == 0 {
         l.num_letters_allowed -= 1;
-    } else {
+    } else if t == 1 {
         l.num_letters_allowed += 1;
+    } else {
+        assert!(t < 2);
     }
     let out = l.num_letters_allowed;
     Box::into_raw(l);
