@@ -18,6 +18,8 @@ typedef struct lettervar LetterVar;
 
 LetterVar* make_lettervar(char chr, char* p);
     
+void init_lettervars(GSList* letters);
+
 void lettervar_set_name(LetterVar* lptr, GString* aw, GString* dw, int row, int col);
     
 void lettervar_set_constraints(LetterVar* lptr, OverlapConstraint* oca, OverlapConstraint* ocd);

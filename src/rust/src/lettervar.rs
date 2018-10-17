@@ -40,7 +40,43 @@ impl LetterVar {
 pub unsafe extern "C" fn make_lettervar(chr: u8, p: *mut u8) -> *mut LetterVar {
     Box::into_raw(Box::new(LetterVar::new(chr, p)))
 }
-    
+
+#[no_mangle]
+pub unsafe extern "C" fn init_lettervars(
+    letters: *mut glib_sys::GSList) {
+
+    let mut p = letters;
+    while p != std::ptr::null_mut() {
+        let lptr = (*p).data as *mut LetterVar;
+        let mut l = Box::from_raw(lptr);
+        l.num_letters_allowed = 0;
+        let mut val = 0;
+        for i in 0 .. 256 {
+            if (l.letter_counts[0][i] > 0) &&
+                (l.letter_counts[1][i] > 0) {
+                l.letters_allowed[i] = 1;
+                l.num_letters_allowed += 1;
+                val = i as u8;
+            } else {
+                l.letters_allowed[i] = 0;
+            }
+        }
+
+        if l.num_letters_allowed == 0 {
+            let name = std::ffi::CStr::from_ptr((*l.name).str);
+            println!("Die: No words for {}", name.to_str().unwrap());
+            std::process::exit(-1);
+        }
+
+        if l.num_letters_allowed == 1 {
+            *(l.pos) = val;
+        }
+
+        Box::into_raw(l);
+        p = (*p).next;
+    }
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn lettervar_set_name(
     lptr: *mut LetterVar,

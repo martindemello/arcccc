@@ -29,7 +29,8 @@ int main(int argc, char *argv[])
 
   grid = read_grid(argv[1], &words, &letters, &constraints);
   dictionary = read_words(argv[2]);
-  init_vars(words, letters, dictionary);
+  init_wordvars(words, dictionary);
+  init_lettervars(letters);
 
   printf("%s\n", grid);
 

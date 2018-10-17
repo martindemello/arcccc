@@ -9,7 +9,7 @@ link_directories (
 )
 
 add_library (
-  libarccc backtracking.c constraint.c init_vars.c read_grid.c
+  libarccc backtracking.c constraint.c read_grid.c
 )
 
 target_link_libraries (libarccc ${GLIB_LIBRARIES})
