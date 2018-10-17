@@ -15,4 +15,8 @@ struct wordvar {
 
 typedef struct wordvar WordVar;
 
+WordVar* make_wordvar(int num, char* dir);
+
+void realloc_wordvar();
+
 void init_wordvars(GSList* words, GPtrArray* dictionary);

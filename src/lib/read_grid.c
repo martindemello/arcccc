@@ -71,22 +71,12 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
         aw = awgrid[row][col-1];
         aw->length++;
         if (aw->length >= 4) {
-          aw->letters = g_realloc(aw->letters, (aw->length+1) * sizeof (LetterVar *));
-          aw->letter_counts = g_realloc(aw->letter_counts, (aw->length+1) * sizeof (gint *));
-          aw->orthogonal_constraints = g_realloc(aw->orthogonal_constraints, 
-                                                 (aw->length+1) * sizeof (struct OverlapConstraint *));
+          realloc_wordvar(aw);
         }
       } else {
-        aw = g_malloc0(sizeof (struct wordvar));
-        *wordlist = g_slist_prepend(*wordlist, (gpointer) aw);
         wcount++;
-        aw->name = g_string_new("");
-        g_string_sprintf(aw->name, "%d across", wcount);
-        aw->stack = g_ptr_array_new();
-        // allocate space for 4 letters by default
-        aw->letters = g_malloc(4 * sizeof (LetterVar *));
-        aw->letter_counts = g_malloc(4 * sizeof (gint *));
-        aw->orthogonal_constraints = g_malloc(4 * sizeof (struct OverlapConstraint *));
+        aw = make_wordvar(wcount, "across");
+        *wordlist = g_slist_prepend(*wordlist, (gpointer) aw);
       }
       awgrid[row][col] = aw;
       
@@ -96,22 +86,12 @@ read_grid(char *filename, GSList **wordlist, GSList **letterlist, GSList **const
         dw = dwgrid[row-1][col];
         dw->length++;
         if (dw->length >= 4) {
-          dw->letters = g_realloc(dw->letters, (dw->length+1) * sizeof (LetterVar *));
-          dw->letter_counts = g_realloc(dw->letter_counts, (dw->length+1) * sizeof(gint *));
-          dw->orthogonal_constraints = g_realloc(dw->orthogonal_constraints, 
-                                                 (dw->length+1) * sizeof (struct OverlapConstraint *));
+          realloc_wordvar(dw);
         }
       } else {
-        dw = g_malloc0(sizeof (struct wordvar));
-        *wordlist = g_slist_prepend(*wordlist, dw);
         wcount = wcountcur + 1;
-        dw->name = g_string_new("");
-        g_string_sprintf(dw->name, "%d down", wcount);
-        dw->stack = g_ptr_array_new();
-        // allocate space for 4 letters by default
-        dw->letters = g_malloc(4 * sizeof (LetterVar *));
-        dw->letter_counts = g_malloc(4 * sizeof(gint *));
-        dw->orthogonal_constraints = g_malloc(4 * sizeof (struct OverlapConstraint *));
+        dw = make_wordvar(wcount, "down");
+        *wordlist = g_slist_prepend(*wordlist, dw);
       }
       dwgrid[row][col] = dw;
 

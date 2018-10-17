@@ -18,8 +18,7 @@ pub struct LetterVar {
 }
 
 impl LetterVar {
-  #[no_mangle]
-  pub unsafe extern "C" fn new(chr: u8, p: *mut u8) -> LetterVar {
+  pub unsafe fn new(chr: u8, p: *mut u8) -> LetterVar {
     let f = if chr == 46 { 1 } else { 0 };
     let mut out = LetterVar {
         letter_counts: [[0; 256]; 2],

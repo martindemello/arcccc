@@ -1,14 +1,19 @@
-use constraint::Constraint;
-use constraint::OverlapConstraint;
-use constraint::UniquenessConstraint;
-use constraint_queue::Queue;
-use lettervar::LetterVar;
-use lettervar;
-use std;
-
-
 extern crate glib_sys;
 extern crate libc;
+
+use self::libc::c_char;
+use std;
+use std::ffi::CStr;
+use std::ffi::CString;
+use std::mem;
+
+use constraint::Constraint;
+use constraint::OverlapConstraint;
+use constraint_queue::Queue;
+use constraint::UniquenessConstraint;
+use lettervar;
+use lettervar::LetterVar;
+
 
 #[link(name = "arccc")]
 extern {
@@ -28,6 +33,50 @@ pub struct WordVar {
     orthogonal_constraints: *mut *mut OverlapConstraint,
     unique_constraint: *mut UniquenessConstraint,
     name: *mut glib_sys::GString
+}
+
+/* Helper function for WordVar::new */
+unsafe fn gmalloc_4<T>() -> *mut *mut T {
+    glib_sys::g_malloc(4 * mem::size_of::<*mut T>()) as *mut *mut T
+}
+
+impl WordVar {
+    pub unsafe fn new(num: i32, dir: *const c_char) -> WordVar {
+        let dir = CStr::from_ptr(dir).to_str().unwrap();
+        let name = CString::new(format!("{} {}", num, dir)).unwrap();
+        WordVar {
+            possible_values: std::ptr::null_mut(),
+            length: 0,
+            letters: gmalloc_4::<LetterVar>(),
+            letter_counts: gmalloc_4::<i32>(),
+            stack: glib_sys::g_ptr_array_new(),
+            orthogonal_constraints: gmalloc_4::<OverlapConstraint>(),
+            unique_constraint: std::ptr::null_mut(),
+            name: glib_sys::g_string_new(name.as_ptr())
+        }
+    }
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn make_wordvar(num: i32, dir: *const c_char) -> *mut WordVar {
+    Box::into_raw(Box::new(WordVar::new(num, dir)))
+}
+
+/* Helper function for realloc_wordvar */
+unsafe fn grealloc<T>(obj: *mut *mut T, len: i32) -> *mut *mut T {
+    let (len, _) = mem::size_of::<*mut T>().overflowing_mul(len as usize);
+    glib_sys::g_realloc(obj as *mut self::libc::c_void, len) as *mut *mut T
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn realloc_wordvar(wptr: *mut WordVar) {
+    let mut w = Box::from_raw(wptr);
+    let len = w.length + 1;
+    w.letters = grealloc(w.letters, len);
+    w.letter_counts = grealloc(w.letter_counts, len);
+    w.orthogonal_constraints = grealloc(w.orthogonal_constraints, len);
+    Box::into_raw(w);
 }
 
 #[no_mangle]
