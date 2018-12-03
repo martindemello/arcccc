@@ -15,7 +15,7 @@ gint total = 0;
 int main(int argc, char *argv[])
 {
   GSList *words, *letters, *constraints, *ll;
-  GPtrArray *dictionary;
+  Dictionary *dictionary;
   gchar *grid;
   struct wordvar *w;
   Queue* queue = (Queue *) queue_new();

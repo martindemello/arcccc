@@ -13,6 +13,7 @@ use constraint_queue::Queue;
 use constraint::UniquenessConstraint;
 use lettervar;
 use lettervar::LetterVar;
+use dict_reader::Dictionary;
 
 
 #[link(name = "arccc")]
@@ -82,29 +83,29 @@ pub unsafe extern "C" fn realloc_wordvar(wptr: *mut WordVar) {
 #[no_mangle]
 pub unsafe extern "C" fn init_wordvars(
     words: *mut glib_sys::GSList,
-    dictionary: *mut glib_sys::GPtrArray) {
+    dictionary: *mut Dictionary) {
 
     let mut p = words;
+    let dict = Box::from_raw(dictionary);
     while p != std::ptr::null_mut() {
         let wptr = (*p).data as *mut WordVar; 
         let mut w = Box::from_raw(wptr);
 
         w.possible_values = glib_sys::g_ptr_array_new();
 
-        for i in 0 .. (*dictionary).len {
-            let dword = wordlist_ptr_to_index(dictionary, i as i32);
-
+        for dword in dict.iter() {
             // check that the lengths match
-            if libc::strlen(dword as *const i8) != w.length as usize {
+            if (**dword).len() != w.length as usize {
                 continue;
             }
+
+            let dchars = (**dword).as_bytes();
 
             // check that the word matches the constraints
             let mut flag = false;
             for j in 0 .. w.length {
                 let letter : *mut LetterVar = *(w.letters.offset(j as isize));
-                let index = dword.offset(j as isize);
-                let ix = *index as u8;
+                let ix = dchars[j as usize] as u8;
                 if lettervar::lettervar_letter_allowed(letter, ix) == 0 {
                     flag = true;
                     break;
@@ -115,11 +116,12 @@ pub unsafe extern "C" fn init_wordvars(
             }
 
             // add this word to the possible values
-            glib_sys::g_ptr_array_add(w.possible_values, dword as *mut libc::c_void);
+            let dup = (**dword).clone();
+            let cword = CString::new(dup).unwrap().into_raw();
+            glib_sys::g_ptr_array_add(w.possible_values, cword as *mut libc::c_void);
             for j in 0 .. w.length {
                 let mut lc_j_ptr = w.letter_counts.offset(j as isize);
-                let dw_ptr = dword.offset(j as isize);
-                let dw = *dw_ptr as isize;
+                let dw = dchars[j as usize] as isize;
                 let mut lc = *lc_j_ptr;
                 let mut lc_j_dw_ptr = lc.offset(dw);
                 lc_j_dw_ptr.write(*lc_j_dw_ptr + 1);
